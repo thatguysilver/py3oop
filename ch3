@@ -1,0 +1,44 @@
+# basic example of inheritance in Chapter 3.
+
+class ContactList(list):
+    def search(self, name):
+        'Return all contacts that match the given value'
+        matching_contact = []
+
+        for contact in self:
+            if name.lower() in contact.name.lower():
+                matching_contacts.append(contact)
+            
+            print(matching_contacts)
+
+class Contact:
+    all_contacts = []
+
+    def __init__(self, name = '', email = '', **kwargs):
+        self.name = name
+        self.email = email
+        Contact.all_contacts.append(self) # I love this! It updates the class variable.
+
+class Friend(Contact):
+    def __init__(self, name, email = '', phone = '', **kwargs):
+        super().__init__(name, email)
+        self.phone = phone
+
+class Supplier(Contact):
+    def order(self, order):
+        print(f'{order} ordered for {self.name}')
+
+class MailSender:
+    def send_mail(self, message):
+        print('Sending mail to ' + self.email)
+
+class AddressHolder:
+    def __init__(self, street = '', city = '', state = '', code = '' **kwargs):
+        self.street = street
+        self.city = city
+        self.state = state
+        self.code = code
+
+class EmailableContact(Contact, MailSender):
+    pass
+
