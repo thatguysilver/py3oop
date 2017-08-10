@@ -2,27 +2,28 @@ import hashlib
 
 class User:
     def __init__(self, username, password):
-        '''creates a new user object using given username & password. The
-        password is then encrypted before storage.'''
+        '''Create a new user object. The password
+        will be encrypted before storing.'''
         self.username = username
-        self.password = password
+        self.password = self._encrypt_pw(password)
         self.is_logged_in = False
 
     def _encrypt_pw(self, password):
-        '''encrypt the password with the username and return theh sha digest.'''
+        '''Encrypt the password with the username and return
+        the sha digest.'''
         hash_string = (self.username + password)
-        hash_string = hash_string.encode('utf8')
+        hash_string = hash_string.encode("utf8")
         return hashlib.sha256(hash_string).hexdigest()
 
     def check_password(self, password):
-        'Returns True only if password is valid for this user'
-
+        '''Return True if the password is valid for this
+        user, false otherwise.'''
         encrypted = self._encrypt_pw(password)
         return encrypted == self.password
 
 class AuthException(Exception):
-    def __init__(self, username, user = None):
-        super().__init__(username, user)
+    def __init__(self, username, user=None):
+        super().__init__(username)
         self.username = username
         self.user = user
 
@@ -39,18 +40,18 @@ class InvalidPassword(AuthException):
     pass
 
 class PermissionError(Exception):
-    'Extends Exception, not AuthException, because it doesnt require a username/pass'
     pass
-
 
 class NotLoggedInError(AuthException):
     pass
 
 class NotPermittedError(AuthException):
     pass
+
 class Authenticator:
     def __init__(self):
-        'Construct an authenticator to manage the users loggin in/out.'
+        '''Construct an authenticator to manage
+        users logging in and out.'''
         self.users = {}
 
     def add_user(self, username, password):
@@ -63,7 +64,7 @@ class Authenticator:
     def login(self, username, password):
         try:
             user = self.users[username]
-        except KeyError:                   #that is, if the name isn't in users
+        except KeyError:
             raise InvalidUsername(username)
 
         if not user.check_password(password):
@@ -77,26 +78,27 @@ class Authenticator:
             return self.users[username].is_logged_in
         return False
 
-class Authorizer:
+class Authorizor:
     def __init__(self, authenticator):
         self.authenticator = authenticator
         self.permissions = {}
 
     def add_permission(self, perm_name):
-        'Create a new permission that users can be added to'
+        '''Create a new permission that users
+        can be added to'''
         try:
             perm_set = self.permissions[perm_name]
         except KeyError:
             self.permissions[perm_name] = set()
         else:
-            raise PermissionError('Permission exists')
+            raise PermissionError("Permission Exists")
 
     def permit_user(self, perm_name, username):
-        'Grants permission to user'
+        '''Grant the given permission to the user'''
         try:
-            perm_set = self.permissions[perm.name]
+            perm_set = self.permissions[perm_name]
         except KeyError:
-            raise PermissionError('Permission does not exist')
+            raise PermissionError("Permission does not exist")
         else:
             if username not in self.authenticator.users:
                 raise InvalidUsername(username)
@@ -108,7 +110,7 @@ class Authorizer:
         try:
             perm_set = self.permissions[perm_name]
         except KeyError:
-            raise PermissionError('Permission does not exist.')
+            raise PermissionError("Permission does not exist")
         else:
             if username not in perm_set:
                 raise NotPermittedError(username)
@@ -117,7 +119,5 @@ class Authorizer:
 
 
 
-
 authenticator = Authenticator()
-
-authorizer = Authorizer(authenticator)
+authorizor = Authorizor(authenticator)
