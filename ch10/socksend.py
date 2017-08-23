@@ -1,4 +1,5 @@
 # We look at an example of using decorators with the socket library.
+# I wish this book used more libraries that don't req so much side-research to use.
 
 import socket
 
