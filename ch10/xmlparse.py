@@ -1,11 +1,15 @@
 # our xml parser to demonstrate the state design pattern.
 
 class Node:
-    'Each <thing> is a node.'
+    '''
+    Node in our tree of node objects has a tag name, a list of its children
+    nodes, and text, if it has any. When printed, it returns the name of the tag
+    and any optional text.
+    '''
     def __init__(self, tag_name, parent = None):
         self.tag_name = tag_name
         self.children = []
-        self.text = ''
+        self.text = ''   
     
     def __str__(self):
         if self.text:
@@ -30,6 +34,10 @@ class Parser:
         self.process(self.parse_string)
 
 class FirstTag:
+    '''
+    Uses str.find() to locate the indices of the < and > in the first tag, sets
+    tag_name equal to the rest of the tag. 
+    '''
     def process(self, remaining_string, parser):
         i_start_tag = remaining_string.find('<')
         i_end_tag = remaining_string.find('>')
@@ -38,3 +46,62 @@ class FirstTag:
         parser.root = parser.current_node = root
         parser.state = ChildNode()
         return remaining_string[i_end_tag + 1:]
+
+class ChildNode:
+    '''
+    Determines whether the next node is an opening tag, a closing tag, or a 
+    text node and alerts the parser accordingly.
+    '''
+    def process(self, remaining_string, parser):
+        stripped = remaining_string.strip()
+        if stripped.startswith('</'):
+            parser.state = CloseTag()
+        elif stripped.startswith('<'):
+            parser.state = OpenTag()
+        else:
+            parser.state = TextNode()
+        return stripped
+
+class OpenTag:
+    'Returns opening tag name minus the < and the >; sets current node to child'
+    def process(self, remaining_string, parser):
+        i_start_tag = remaining_string.find('<')
+        i_end_tag = remaining_string.find('>')
+        tag_name = remaining_string[i_start_tag + 1:i_end_tag]
+        node = Node(tag_name, parser.current_node)
+        parser.current_node.children.append(node)
+        parser.current_node = node
+        parser.state = ChildNode()
+        return remaining_string[i_end_tag + 1:]
+
+class CloseTag:
+    'Returns closing tag minus the < and the >; sets current node to parent'
+    def process(self):
+        i_start_tag = remaining_string.find('<')
+        i_end_tag = remaining_string.find('>')
+        assert remaining_string[i_start_tag + 1] == '/'
+        tag_name = remaining_string[i_start_tag + 2:i_end_tag]
+        assert tag_name == parser.current_node.tag_name
+        parser.current_node = parser.current_node.tag_name
+        parser.current_node = parser.current_node.parent
+        parser.state = ChildNode()
+        return remaining_string[i_end_tag + 1:].strip()
+
+class TextNode:
+    def process(self, remaining_string, parser):
+        i_start_tag = remaining_string.find('<')
+        text = remaining_string[:i_start_tag]
+        parser.current_node.text = text
+        parser.state = ChildNode()
+        return remaining_string[i_start_tag:]
+
+if __name__ == '__main__':
+    import sys
+    with open(sys.argv[1]) as file:
+            contents = file.read()
+            p = Parser(contents)
+            p.start()
+
+            nodes = nodes.pop(0)
+            print(node)
+            nodes = node.children + nodes
