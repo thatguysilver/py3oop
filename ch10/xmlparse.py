@@ -1,4 +1,4 @@
-# our xml parser to demonstrate the state design pattern.
+# just use gh.py. fuck this.
 
 class Node:
     '''
